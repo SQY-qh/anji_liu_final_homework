@@ -1,0 +1,106 @@
+
+\begin{table}[h]
+\centering
+\caption{MNIST Base Variants: Final Test Metrics}
+\label{tab:mnist-base}
+\begin{tabular}{lcc}
+\toprule
+Model & Test Acc & Test Loss \\
+\midrule
+mlp & 0.9752 & 0.1096 \\
+cnn & 0.9910 & 0.0324 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{SMS Spam Base Variants: Final Test Metrics}
+\label{tab:sms_spam-base}
+\begin{tabular}{lcc}
+\toprule
+Model & Test Acc & Test Loss \\
+\midrule
+mlp & 0.8915 & 1.1383 \\
+cnn & 0.9722 & 0.1726 \\
+mingru & 0.9713 & 0.2011 \\
+mamba & 0.9776 & 0.5584 \\
+transformer & 0.9830 & 0.1072 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{SMS Spam mlp Ablations: Final Test Metrics}
+\label{tab:sms-mlp}
+\begin{tabular}{lcc}
+\toprule
+Variant & Test Acc & Test Loss \\
+\midrule
+base & 0.8915 & 1.1383 \\
+wide & 0.8789 & 1.4167 \\
+tanh & 0.8843 & 0.3155 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{SMS Spam cnn Ablations: Final Test Metrics}
+\label{tab:sms-cnn}
+\begin{tabular}{lcc}
+\toprule
+Variant & Test Acc & Test Loss \\
+\midrule
+base & 0.9722 & 0.1726 \\
+wide\_bn & 0.9749 & 0.2010 \\
+k5\_do & 0.9731 & 0.1640 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{SMS Spam mingru Ablations: Final Test Metrics}
+\label{tab:sms-mingru}
+\begin{tabular}{lcc}
+\toprule
+Variant & Test Acc & Test Loss \\
+\midrule
+base & 0.9713 & 0.2011 \\
+hidden256 & 0.9785 & 0.1578 \\
+time\_dim1 & 0.9758 & 0.1740 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{SMS Spam mamba Ablations: Final Test Metrics}
+\label{tab:sms-mamba}
+\begin{tabular}{lcc}
+\toprule
+Variant & Test Acc & Test Loss \\
+\midrule
+base & 0.9776 & 0.5584 \\
+bigger\_state & 0.9839 & 0.3230 \\
+wider & 0.9812 & 0.2137 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{SMS Spam transformer Ablations: Final Test Metrics}
+\label{tab:sms-transformer}
+\begin{tabular}{lcc}
+\toprule
+Variant & Test Acc & Test Loss \\
+\midrule
+base & 0.9830 & 0.1072 \\
+larger & 0.9004 & 0.3222 \\
+more\_tokens & 0.9848 & 0.0871 \\
+\bottomrule
+\end{tabular}
+\end{table}

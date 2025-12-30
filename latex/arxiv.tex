@@ -1,0 +1,112 @@
+\documentclass[UTF8]{ctexart}
+\usepackage{geometry}
+\geometry{a4paper,margin=1in}
+\usepackage{hyperref}
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\title{MNIST 手写数字分类对比实验指南（MLP/CNN/MinGRU/Mamba/Transformer）}
+\author{作者}
+\date{\today}
+\begin{document}
+\maketitle
+\begin{abstract}
+本文在统一的数据处理、训练与评估流程下，对比五种骨干网络（MLP、CNN、MinGRU、Mamba、Transformer）在 MNIST 及相关数据集上的分类性能，提供快速开始指南、调参建议、结果解读与扩展实验方向，并汇总输出文件与命令。
+\end{abstract}
+\tableofcontents
+\section{项目简介}
+\begin{itemize}[leftmargin=*]
+\item 对比五种骨干网络在 MNIST 分类任务上的性能：\texttt{mlp}、\texttt{cnn}、\texttt{mingru}、\texttt{mamba}、\texttt{transformer}
+\item 统一数据处理、训练与评估流程；输出训练/测试损失与准确率曲线以及指标汇总
+\end{itemize}
+\section{环境准备}
+\begin{itemize}[leftmargin=*]
+\item 依赖：\texttt{torch}、\texttt{torchvision}、\texttt{numpy}、\texttt{matplotlib}
+\item 安装命令：\verb|pip install -r classify/requirements.txt|
+\item 设备：默认 CPU；如需 GPU，可在本地配置 CUDA 并修改代码中的设备
+\end{itemize}
+\section{快速开始}
+\begin{itemize}[leftmargin=*]
+\item 运行基础对比（MNIST）：\verb|python -m classify.main|
+\item 运行多数据集消融：\verb|python -m classify.experiments|
+\item 结果位置：\texttt{classify/results/}
+\begin{itemize}
+\item 单模型曲线：\texttt{\{dataset\}\_\{model\}\_\{variant\}\_curves.png}（如 \texttt{mnist\_cnn\_base\_curves.png}）
+\item 横向对比（同数据集不同模型）：测试准确率 \texttt{\{dataset\}\_cross\_model\_test\_acc.png}；测试损失 \texttt{\{dataset\}\_cross\_model\_test\_loss.png}
+\item 纵向消融（同模型不同结构/参数）：测试准确率 \texttt{\{dataset\}\_\{model\}\_ablation\_test\_acc.png}；测试损失 \texttt{\{dataset\}\_\{model\}\_ablation\_test\_loss.png}
+\item 指标汇总：\texttt{ablation\_summary.json}
+\end{itemize}
+\end{itemize}
+\section{运行说明}
+\begin{itemize}[leftmargin=*]
+\item 训练与评估流程在 \texttt{classify/train.py} 中实现，\texttt{classify/main.py} 会顺序运行五种模型并保存结果
+\item 单模型运行示例（在交互式环境中调用）：\verb|from classify.train import train_one|，\verb|train_one('cnn', epochs=3, batch_size=64, lr=1e-3, device='cpu')|
+\end{itemize}
+\section{配置与调参}
+\subsection{主要参数}
+\begin{itemize}[leftmargin=*]
+\item \texttt{epochs}：训练轮次（默认 3，建议 5--10 以获得更稳定结果）
+\item \texttt{batch\_size}：批次大小（默认 64）
+\item \texttt{lr}：学习率（默认 \texttt{1e-3}）
+\item \texttt{device}：设备（\texttt{cpu} 或 \texttt{cuda}）
+\end{itemize}
+\subsection{修改方式}
+\begin{itemize}[leftmargin=*]
+\item 批量运行时可编辑 \texttt{classify/train.py} 中 \texttt{run\_all} 的调用参数
+\item 单模型运行时直接传参给 \texttt{train\_one}
+\end{itemize}
+\section{输出与可视化}
+每个模型训练结束会生成两类曲线（统一坐标：$\mathrm{loss}\in[0,1]$，$\mathrm{acc}\in[0,1]$）：
+\begin{itemize}[leftmargin=*]
+\item 训练/测试损失随 epoch 变化：左图
+\item 训练/测试准确率随 epoch 变化：右图
+\end{itemize}
+对比图：横向（跨模型）与纵向（同模型不同参数/结构）均以“所有对比项画在一张图”输出，分别提供测试集损失与准确率两张图。
+\section{实验结果摘要}
+设置：\texttt{3 epoch}, \texttt{batch=64}, Adam \texttt{lr=1e-3}, CPU。
+\begin{itemize}[leftmargin=*]
+\item \texttt{cnn}：Test Acc 约 \texttt{0.990}；Test Loss 约 \texttt{0.032}；收敛速度快，稳定性好，训练/测试曲线贴合
+\item \texttt{mlp}：Test Acc 约 \texttt{0.973}；Test Loss 约 \texttt{0.089}；表现稳健，收敛良好，但相对 CNN 略逊
+\item \texttt{mingru}：Test Acc 约 \texttt{0.982}；Test Loss 约 \texttt{0.065}；序列建模对 MNIST 有增益，优于 MLP
+\item \texttt{transformer}：Test Acc 约 \texttt{0.964}；Test Loss 约 \texttt{0.115}；简化 ViT，在更长训练与更大维度下可进一步提升
+\item \texttt{mamba}：Test Acc 约 \texttt{0.928}；Test Loss 约 \texttt{0.253}；简化实现下短训较敏感，适当加深/增大状态维度可改善
+\end{itemize}
+\section{结果分析与解读}
+\begin{itemize}[leftmargin=*]
+\item 收敛速度：\texttt{cnn} 与 \texttt{mingru} 收敛快且平滑；\texttt{mlp} 次之；\texttt{transformer} 与 \texttt{mamba} 需更长训练与更大容量
+\item 泛化能力：训练/测试曲线间隙小的模型更稳健，\texttt{cnn}、\texttt{mingru} 在当前设置下泛化较好
+\item 架构差异：\texttt{cnn} 在图像任务上具备局部建模与平移不变性优势；\texttt{mingru} 将图像按列序列化，门控机制帮助捕捉跨步依赖；\texttt{transformer} 依赖足够的 token 容量与层数，简化配置下性能一般；\texttt{mamba} 的状态空间机制强调长序列效率，图像上需更适配设计与更深层
+\end{itemize}
+\section{三数据集对比分析（统一坐标）}
+\begin{itemize}[leftmargin=*]
+\item MNIST：\texttt{cnn} 收敛最快、准确率最高；\texttt{mingru} 次之；\texttt{mlp} 稳健；\texttt{transformer/mamba} 需更大容量及更长训练
+\item CIFAR-10：彩色、复杂背景更凸显 \texttt{cnn} 的局部归纳偏置优势；小型 \texttt{transformer} 随容量提升（embed/head/depth）有明显增益；\texttt{mlp} 由于缺少空间结构表现较弱
+\item Sequential MNIST（Permuted）：长序列依赖更能体现 \texttt{MinGRU/Mamba/Transformer} 差异；\texttt{cnn} 因失去二维先验表现较弱；\texttt{mlp} 亦逊色
+\end{itemize}
+\section{常见问题与解决}
+\begin{itemize}[leftmargin=*]
+\item MNIST 下载失败：检查网络或更换下载镜像；确保 \texttt{torchvision} 版本满足要求
+\item 训练过慢：减少 \texttt{epochs}/\texttt{batch\_size}，或在具备环境的情况下改为 \texttt{device='cuda'}
+\item 曲线不收敛：降低学习率至 \texttt{5e-4/1e-4}，增加 \texttt{epochs} 至 5--10
+\item 精度不达预期：\texttt{cnn} 增加通道宽度与层数，在分类器处增加隐藏层；\texttt{transformer} 增大 \texttt{embed\_dim}、\texttt{num\_heads}、\texttt{depth}，添加 \texttt{dropout}；\texttt{mamba} 增加 \texttt{state\_size}，堆叠多层 cell，延长训练
+\end{itemize}
+\section{扩展实验建议}
+\begin{itemize}[leftmargin=*]
+\item 增加训练轮次：将 \texttt{epochs} 调整为 10--20，观察曲线趋稳与最终指标提升
+\item 调优策略：余弦退火或阶梯式学习率衰减；在 \texttt{transformer} 中尝试 AdamW
+\item 架构扩展：\texttt{cnn} 双卷积块（\verb|1->32->64|）、批归一化、\texttt{Dropout(0.5)}；\texttt{mingru} 加大 \texttt{hidden\_size} 至 \texttt{256}，或双向扫描再融合；\texttt{mamba} 多层堆叠、提高 \verb|state_size>=128|，尝试可学习位置编码融合；\texttt{transformer} \verb|patch_size=2| 增加 token 数量，\verb|embed_dim=128~256|，\verb|depth=4~6|
+\end{itemize}
+\section{复现实验与对比}
+\begin{itemize}[leftmargin=*]
+\item 建议固定随机种子与数据加载参数，以便不同架构可直接横向对比
+\item 在相同 \texttt{epochs/batch\_size/lr} 条件下进行测试，并统一评估指标与绘制曲线
+\end{itemize}
+\section{文件与命令汇总}
+\begin{itemize}[leftmargin=*]
+\item 曲线文件：\texttt{classify/results/\{dataset\}\_\{model\}\_\{variant\}\_curves.png}
+\item 对比图：\texttt{\{dataset\}\_cross\_model\_test\_acc.png}/\texttt{\{dataset\}\_cross\_model\_test\_loss.png}、\texttt{\{dataset\}\_\{model\}\_ablation\_test\_acc.png}/\texttt{\{dataset\}\_\{model\}\_ablation\_test\_loss.png}
+\item 指标汇总：\texttt{classify/results/ablation\_summary.json}
+\item 安装依赖：\verb|pip install -r classify/requirements.txt|
+\item 运行全部：\verb|python -m classify.main|
+\end{itemize}
+\end{document}

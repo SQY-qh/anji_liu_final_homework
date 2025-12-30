@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.DS_Store
+.ipynb_checkpoints/
+
+# Data and generated results
+data/
+classify/results/
+
+# Paper build artifacts
+paper/main.pdf
+paper/figs/
